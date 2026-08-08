@@ -20,30 +20,35 @@ pipeline {
                 sh './mvnw clean compile'
             }
         }
-	stage('SonarQube Analysis') {
-    	    steps {
-                withSonarQubeEnv('SonarQube') {
-                sh '''
-                chmod +x mvnw
-                ./mvnw sonar:sonar \
-                -Dsonar.projectKey=enterprise-devsecops-platform \
-                -Dsonar.projectName=enterprise-devsecops-platform
-            '''
-            }
-       }
-    }
+
         stage('Test') {
             steps {
                 sh './mvnw test'
             }
         }
-	stage('Quality Gate') {
-    	    steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                waitForQualityGate abortPipeline: true
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh '''
+                        chmod +x mvnw
+                        ./mvnw verify \
+                        org.sonarsource.scanner.maven:sonar-maven-plugin:5.2.0.4988:sonar \
+                        -Dsonar.projectKey=enterprise-devsecops-platform \
+                        -Dsonar.projectName=enterprise-devsecops-platform
+                    '''
+                }
             }
-    	}
-    }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
         stage('Package') {
             steps {
                 sh './mvnw clean package -DskipTests'
@@ -58,6 +63,10 @@ pipeline {
 
         failure {
             echo 'Pipeline failed!'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
