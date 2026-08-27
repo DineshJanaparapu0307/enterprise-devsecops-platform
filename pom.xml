@@ -179,7 +179,12 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
+  <distributionManagement>
+    <snapshotRepository>
+      <id>maven-snapshots</id>
+      <url>http://34.229.183.144:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
   <build>
     <plugins>
       <plugin>

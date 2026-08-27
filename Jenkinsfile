@@ -51,7 +51,14 @@ pipeline {
 
         stage('Package') {
             steps {
-                sh './mvnw clean package -DskipTests'
+                configFileProvider([
+                    configFile(
+                        fileId: 'nexus-maven-settings',
+                        variable: 'MAVEN_SETTINGS'
+                    )
+                ]) {
+                    sh './mvnw deploy -DskipTests -s $MAVEN_SETTINGS'
+                }
             }
         }
     }
